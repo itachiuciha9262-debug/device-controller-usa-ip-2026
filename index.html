@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Dashboard & VPN Interface</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* --- CONTAINER STYLE --- */
+        .app-window {
+            width: 100%;
+            max-width: 430px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                        0 0 30px rgba(99, 102, 241, 0.05);
+            display: none;
+        }
+
+        .active-view {
+            display: block;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        /* --- VPN LOGIN PAGE --- */
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            outline: none;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #6366f1;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .primary-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* --- VPN CONTROL PANEL --- */
+        .vpn-status-text {
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 25px;
+            color: #cbd5e1;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 15px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input { display: none; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px; width: 26px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: #22c55e; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* --- MAIN DASHBOARD --- */
+        .section-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6366f1;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .social-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 15px 5px;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+        }
+
+        .social-item:hover { 
+            transform: translateY(-3px); 
+            background: rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .social-item i { font-size: 28px; }
+        .facebook i { color: #1877f2; text-shadow: 0 0 15px rgba(24, 119, 242, 0.3); }
+        .whatsapp i { color: #25d366; text-shadow: 0 0 15px rgba(37, 211, 102, 0.3); }
+        .tiktok i { color: #fe2c55; text-shadow: 0 0 15px rgba(254, 44, 85, 0.3); }
+        .imo i { color: #2196f3; text-shadow: 0 0 15px rgba(33, 150, 243, 0.3); }
+        
+        .user-detail { font-size: 11px; color: #cbd5e1; font-weight: 500; }
+        .app-name { font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+
+        /* --- DEVICE LIVE STREAM MONITOR --- */
+        .live-monitor-box {
+            background: #090d16;
+            border: 2px dashed #334155;
+            border-radius: 20px;
+            height: 160px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            transition: 0.4s;
+        }
+
+        .live-monitor-box.stream-active {
+            border: 2px solid #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
+            background: radial-gradient(circle, #0f1c14 0%, #090d16 100%);
+        }
+
+        .spinner-loader {
+            border: 4px solid rgba(255, 255, 255, 0.05);
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            animation: spin-anim 1s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin-anim {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stream-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* Phone Status List */
+        .status-list { display: flex; flex-direction: column; gap: 10px; }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .status-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.01);
+        }
+
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-info i {
+            font-size: 16px;
+            width: 32px;
+            height: 32px;
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-text h4 { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+        .status-text p { font-size: 11px; color: #94a3b8; }
+
+        .status-badge {
+            font-size: 11px; padding: 4px 10px; border-radius: 20px;
+            background: rgba(34, 197, 94, 0.15); color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            font-weight: 600;
+        }
+
+        /* --- MODAL POPUP --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 999; opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-box {
+            background: #1e1b4b; border: 2px solid #6366f1; border-radius: 24px;
+            padding: 30px 20px; width: 90%; max-width: 370px; text-align: center;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+        }
+        .modal-box i { font-size: 45px; margin-bottom: 15px; }
+        .error-icon { color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        .success-icon { color: #22c55e; text-shadow: 0 0 15px rgba(34, 197, 148, 0.4); }
+        
+        /* Top Navigation Bar */
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 430px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .nav-btn {
+            background: transparent; border: none; color: #94a3b8;
+            cursor: pointer; font-weight: 600; padding: 10px 20px; border-radius: 10px;
+            transition: 0.3s; font-size: 13px;
+        }
+        .nav-btn.active-btn {
+            background: #6366f1; color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-bar">
+        <button class="nav-btn active-btn" id="btnVpn" onclick="switchView('vpnView')">USA IP VPN PRO</button>
+        <button class="nav-btn" id="btnDash" onclick="switchView('dashView')">Control Dashboard</button>
+    </div>
+
+    <div id="vpnView" class="app-window active-view">
+        <div class="header">
+            <h1>USA IP VPN PRO</h1>
+            <p>Enterprise Network Protection</p>
+        </div>
+
+        <div id="vpnLoginSection">
+            <div class="login-form">
+                <div class="input-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="username" placeholder="Enter Username">
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" placeholder="Enter Password">
+                </div>
+                <button class="primary-btn" onclick="handleLogin()">Connect App</button>
+            </div>
+        </div>
+
+        <div id="vpnControlSection" style="display: none;">
+            <div class="vpn-status-text">
+                Connection Status: <span id="ipStatusText" style="color: #ef4444; font-weight: bold;">Disconnected</span>
+            </div>
+            
+            <div class="toggle-container">
+                <span>Enable Secure USA Proxy</span>
+                <label class="switch">
+                    <input type="checkbox" id="ipToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button class="primary-btn" style="width: 100%;" onclick="connectServer()">Connect Server</button>
+        </div>
+    </div>
+
+
+    <div id="dashView" class="app-window">
+        <div class="header">
+            <h1>Cyber Team Help</h1>
+            <p>Device Control & Overview Panel</p>
+        </div>
+
+        <div class="section-title">
+            <i class="fa-solid fa-layer-group"></i> Connected Accounts
+        </div>
+        
+        <div class="social-grid">
+            <div class="social-item facebook" onclick="checkAccess('Facebook Control Action')">
+                <i class="fa-brands fa-facebook"></i>
+                <span class="app-name">Facebook</span>
+                <span class="user-detail">Marjana Akter</span>
+            </div>
+            <div class="social-item whatsapp" onclick="checkAccess('WhatsApp Control Action')">
+                <i class="fa-brands fa-whatsapp"></i>
+                <span class="app-name">WhatsApp</span>
+                <span class="user-detail">+880 1898-484260</span>
+            </div>
+            <div class="social-item tiktok" onclick="checkAccess('TikTok Control Action')">
+                <i class="fa-brands fa-tiktok"></i>
+                <span class="app-name">TikTok</span>
+                <span class="user-detail">❤️marjana moon ❤️</span>
+            </div>
+            <div class="social-item imo" onclick="checkAccess('Imo Control Action')">
+                <i class="fa-solid fa-comment-sms"></i>
+                <span class="app-name">Imo</span>
+                <span class="user-detail">Bithe Aktar</span>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <i class="fa-solid fa-desktop"></i> Device Monitor Live
+        </div>
+        <div class="live-monitor-box" id="liveMonitorScreen" onclick="checkAccess('Device Screen Stream')">
+            <div class="spinner-loader" id="monitorLoader"></div>
+            <span class="stream-text" id="monitorText" style="color:#94a3b8;">USA IP Required for Live Stream<br><small style="color:#64748b; font-weight:normal;">Waiting for Proxy...</small></span>
+        </div>
+
+        <div class="section-title">
+            <i class="fa-solid fa-sliders"></i> Phone Access & Status
+        </div>
+        
+        <div class="status-list">
+            <div class="status-card" onclick="checkAccess('File Storage System')">
+                <div class="status-info">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <div class="status-text">
+                        <h4>File Access</h4>
+                        <p>Internal & SD Card Storage</p>
+                    </div>
+                </div>
+                <span class="status-badge">Allowed</span>
+            </div>
+
+            <div class="status-card" onclick="checkAccess('Gallery Mirror Panel')">
+                <div class="status-info">
+                    <i class="fa-solid fa-images"></i>
+                    <div class="status-text">
+                        <h4>Gallery & Media</h4>
+                        <p>Photos, Videos & DCIM</p>
+                    </div>
+                </div>
+                <span class="status-badge">Allowed</span>
+            </div>
+
+            <div class="status-card" onclick="checkAccess('Network Live Stream')">
+                <div class="status-info">
+                    <i class="fa-solid fa-camera"></i>
+                    <div class="status-text">
+                        <h4>Camera Access</h4>
+                        <p>Front & Back Live Capture</p>
+                    </div>
+                </div>
+                <span class="status-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.2);">Standby</span>
+            </div>
+
+            <div class="status-card" onclick="checkAccess('Microphone Intercept')">
+                <div class="status-info">
+                    <i class="fa-solid fa-microphone"></i>
+                    <div class="status-text">
+                        <h4>Microphone Access</h4>
+                        <p>Real-time Audio Listening</p>
+                    </div>
+                </div>
+                <span class="status-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.2);">Standby</span>
+            </div>
+
+            <div class="status-card" onclick="checkAccess('Call Logs System')">
+                <div class="status-info">
+                    <i class="fa-solid fa-phone-volume"></i>
+                    <div class="status-text">
+                        <h4>Call Logs & SMS</h4>
+                        <p>Incoming & Outgoing Access</p>
+                    </div>
+                </div>
+                <span class="status-badge">Allowed</span>
+            </div>
+
+            <div class="status-card" onclick="checkAccess('Phonebook Database')">
+                <div class="status-info">
+                    <i class="fa-solid fa-address-book"></i>
+                    <div class="status-text">
+                        <h4>Contact List</h4>
+                        <p>Full Phonebook & Contacts Backup</p>
+                    </div>
+                </div>
+                <span class="status-badge">Allowed</span>
+            </div>
+
+            <div class="status-card" onclick="checkAccess('Notification Listener')">
+                <div class="status-info">
+                    <i class="fa-solid fa-bell"></i>
+                    <div class="status-text">
+                        <h4>App Notifications</h4>
+                        <p>Intercept Real-time Push Alerts</p>
+                    </div>
+                </div>
+                <span class="status-badge">Active</span>
+            </div>
+
+            <div class="status-card" onclick="checkAccess('GPS Tracker Core')">
+                <div class="status-info">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <div class="status-text">
+                        <h4>GPS Location</h4>
+                        <p>Real-time Target Tracking</p>
+                    </div>
+                </div>
+                <span class="status-badge" style="background:rgba(234,179,8,0.15); color:#facc15; border-color:rgba(234,179,8,0.2);">Live</span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-box">
+            <i id="modalIcon" class="fa-solid fa-triangle-exclamation"></i>
+            <h3 id="modalTitle">Access Restricted</h3>
+            <p id="modalMessage">ইউএস এর আইপি অ্যাড্রেস কানেক্ট করুন।</p>
+            <button class="primary-btn" style="padding: 10px 30px; margin-top: 5px;" onclick="closeModal()">ঠিক আছে</button>
+        </div>
+    </div>
+
+
+    <script>
+        let isIpConnected = false;
+
+        function switchView(viewId) {
+            document.getElementById('vpnView').classList.remove('active-view');
+            document.getElementById('dashView').classList.remove('active-view');
+            document.getElementById('btnVpn').classList.remove('active-btn');
+            document.getElementById('btnDash').classList.remove('active-btn');
+
+            document.getElementById(viewId).classList.add('active-view');
+            if(viewId === 'vpnView') document.getElementById('btnVpn').classList.add('active-btn');
+            if(viewId === 'dashView') document.getElementById('btnDash').classList.add('active-btn');
+        }
+
+        function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if(user === "Noor" && pass === "923852625") {
+                document.getElementById('vpnLoginSection').style.display = 'none';
+                document.getElementById('vpnControlSection').style.display = 'block';
+            } else {
+                alert("ভুল ইউজারনেম অথবা পাসওয়ার্ড!");
+            }
+        }
+
+        function connectServer() {
+            const toggle = document.getElementById('ipToggle');
+            const statusText = document.getElementById('ipStatusText');
+            
+            // লাইভ মনিটরের এলিমেন্টগুলো ক্যাচ করা
+            const monitorBox = document.getElementById('liveMonitorScreen');
+            const monitorLoader = document.getElementById('monitorLoader');
+            const monitorText = document.getElementById('monitorText');
+
+            if(toggle.checked) {
+                isIpConnected = true;
+                statusText.innerText = "Connected";
+                statusText.style.color = "#22c55e";
+                
+                // আইপি সফলভাবে কানেক্ট হলে লাইভ মনিটর আপডেট হবে
+                monitorBox.classList.add('stream-active');
+                monitorLoader.style.display = 'none';
+                monitorText.innerHTML = "<i class='fa-solid fa-circle-dot' style='color:#ef4444; font-size:14px; animation: blink 1s infinite; margin-right:5px;'></i> <span style='color:#22c55e; font-weight:bold;'>LIVE STREAM ACTIVE</span><br><small style='color:#a7f3d0;'>USA SECURE PROXY NODE #04</small>";
+                
+                alert("USA IP VPN PRO সার্ভার সফলভাবে সংযুক্ত হয়েছে!");
+            } else {
+                alert("দয়া করে আগে 'Enable Secure USA Proxy' অন করুন।");
+            }
+        }
+
+        function checkAccess(titleName) {
+            const modal = document.getElementById('customModal');
+            const modalIcon = document.getElementById('modalIcon');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+
+            modal.classList.add('active');
+
+            if(isIpConnected) {
+                modalIcon.className = "fa-solid fa-circle-check success-icon";
+                modalTitle.innerText = titleName;
+                modalMessage.innerHTML = "<span style='color:#22c55e; font-weight:bold; font-size:16px;'>IP Connected Successful</span><br><br><span style='color:#ef4444; font-weight:bold; font-size:15px; letter-spacing:0.5px;'>Bangladesh Server Blocked</span>";
+            } else {
+                modalIcon.className = "fa-solid fa-triangle-exclamation error-icon";
+                modalTitle.innerText = "Access Restricted";
+                modalMessage.innerText = "ইউএস এর আইপি অ্যাড্রেস কানেক্ট করুন।";
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.remove('active');
+        }
+    </script>
+
+    <style>
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+</body>
+</html>
